@@ -1,0 +1,15 @@
+#libftprintf
+*.a
+
+#objcts
+*.o
+
+#testers
+printfTester
+ft_printf_tester
+
+#binaries
+*.out
+
+#main
+main.c
