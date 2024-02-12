@@ -1,12 +1,14 @@
 #libftprintf
 *.a
+*.json
 
 #objcts
 *.o
 
 #testers
-printfTester
-ft_printf_tester
+printfTester/
+ft_printf_tester/
+.cache/
 
 #binaries
 *.out

@@ -6,95 +6,20 @@
 /*   By: dardo-na <dardo-na@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 09:25:08 by dardo-na          #+#    #+#             */
-/*   Updated: 2022/08/09 07:15:36 by dardo-na         ###   ########.fr       */
+/*   Updated: 2024/02/12 00:55:51 by dardo-na         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
+#include <limits.h>
+#include <stdio.h>
 
-static char	*ft_ptr_adr(char *word)
-{
-	char	*temp_w;
+#define NUMS_UPPERCASE "0123456789ABCDEF"
+#define NUMS_LOWERCASE "0123456789abcdef"
+#define BASE10 10
+#define BASE16 16
 
-	temp_w = ft_mod_strdup(word);
-	free(word);
-	if (temp_w[0] == '0' && ft_strlen(temp_w) == 1)
-		word = ft_mod_strdup("(nil)");
-	else
-	{
-		word = ft_mod_strdup("0x");
-		word = ft_mod_strjoin(word, temp_w);
-	}
-	free(temp_w);
-	return (word);
-}
-
-static char	*unsigneds_flags(const char *s, unsigned long long n)
-{
-	char	*word;
-	int		i;
-
-	i = 1;
-	word = NULL;
-	if (s[i] == 'x' || s[i] == 'X')
-	{
-		word = ft_i_to_hex((unsigned int)n);
-		if (s[i] == 'X')
-		{
-			i = 0;
-			while (word[i++])
-				word[i - 1] = ft_toupper(word[i - 1]);
-		}
-	}
-	else if (s[i] == 'p')
-	{
-		word = ft_i_to_hex(n);
-		word = ft_ptr_adr(word);
-	}
-	else if (s[i] == 'u')
-		word = ft_u_to_a((unsigned int)n);
-	return (word);
-}
-
-static int	ft_printchar(va_list args, char c)
-{
-	if (c == '%' || c == 'c')
-	{
-		if (c == '%')
-			ft_putchar_fd('%', 1);
-		else
-			ft_putchar_fd(va_arg(args, int), 1);
-		return (1);
-	}
-	return (0);
-}
-
-static int	ft_atow(const char *s, va_list args)
-{
-	int		i;
-	char	*word;
-
-	i = 1;
-	if (ft_printchar(args, s[i]) == 1)
-		return (1);
-	if (s[i] == 's')
-	{
-		word = NULL;
-		word = va_arg(args, char *);
-		if (!word)
-			word = ft_strdup("(null)");
-		else
-			word = ft_strdup(word);
-	}
-	if (s[i] == 'd' || s[i] == 'i')
-		word = ft_itoa(va_arg(args, int));
-	if (s[i] == 'x' || s[i] == 'X' || s[i] == 'p' || s[i] == 'u')
-		word = unsigneds_flags(s, va_arg(args, unsigned long long));
-	ft_putstr_fd(word, 1);
-	i = ft_strlen(word);
-	free(word);
-	return (i);
-}
+int	format_str(const char *s, va_list arg);
 
 int	ft_printf(const char *s, ...)
 {
@@ -102,21 +27,112 @@ int	ft_printf(const char *s, ...)
 	int		i;
 	int		size;
 
+	if (NULL == s)
+		return (-1);
 	i = 0;
 	size = 0;
 	va_start(args, s);
 	while (s[i])
 	{
 		if (s[i] == '%')
-		{
-			size += ft_atow(&s[i], args) - 1;
-			i++;
-		}
+			size += format_str(&s[++i], args);
 		else
-			ft_putchar_fd(s[i], 1);
-		size++;
+			size += write(1, &s[i], 1);
 		i++;
 	}
 	va_end(args);
 	return (size);
 }
+
+int	print_num(unsigned long num, int base, const char* nums)
+{
+	int			count;
+
+	if (num == 0 || nums == NULL)
+		return (0);
+	count = print_num(num / base, base, nums) + 1;
+	write(1, &nums[num % base], 1);
+	return (count);
+}
+
+int	handle_unsigned(unsigned long num, int c)
+{
+	unsigned int	cast;
+
+	cast = (unsigned int)num;
+	if (cast == 0)
+		return (write(1, "0", 1));
+	else if (c == 'u')
+		return (print_num(cast, BASE10, NUMS_LOWERCASE));
+	else if (c == 'X')
+		return (print_num(cast, BASE16, NUMS_UPPERCASE));
+	return (print_num(cast, BASE16, NUMS_LOWERCASE));
+}
+
+int	handle_signed(long num)
+{
+	if (num == 0)
+		return (write(1, "0", 1));
+	if (num < 0)
+		return (write(1, "-", 1) + print_num(-num, BASE10, NUMS_LOWERCASE));
+	return (print_num(num, BASE10, NUMS_LOWERCASE));
+}
+
+int handle_addresses(void *addr)
+{
+	unsigned long cast;
+
+	if (addr == NULL)
+		return (write(1, "(nil)", 5));
+	cast = (unsigned long)addr;
+	return (write(1, "0x", 2) + print_num(cast, BASE16, NUMS_LOWERCASE));
+}
+
+int	handle_str(const char *s)
+{
+	int	i;
+
+	i = 0;
+	if (NULL == s)
+		return (write(1, "(null)", 6));
+	while(s[i])
+		write(1, &s[i++], 1);
+	return (i);
+}
+
+int	format_str(const char *s, va_list arg)
+{
+	int	c;
+
+	if (*s == '%')
+		return (write(1, "%", 1));
+	if (*s == 'c')
+	{
+		c = va_arg(arg, int);
+		return (write(1, &c, 1));
+	}
+	else if (*s == 's')
+		return (handle_str(va_arg(arg, char *)));
+	if (*s == 'd' || *s == 'i' )
+		return (handle_signed(va_arg(arg, int)));
+	else if (*s == 'u' || *s == 'x' || *s == 'X')
+		return (handle_unsigned(va_arg(arg, unsigned long), *s));
+	else if (*s == 'p')
+		return (handle_addresses(va_arg(arg, void *)));
+	return (0);
+}
+
+
+// int main(void)
+// {
+// 	// int m = 2147483647;
+// 	// char *h = NULL;
+// 	// char c = 'A';
+// 	// char *p = &c;
+// 	// printf("%i\n", m+10);
+// 	// int n = -123;
+// 	ft_printf(" -> %d\n", ft_printf(" %% "));
+// 	// print_num(n, 10);
+// 	printf(" -> %d\n", printf(" %% "));
+// 	return (0);
+// }

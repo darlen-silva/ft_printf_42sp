@@ -1,24 +1,20 @@
-NAME	=	libftprintf.a
+NAME	= libftprintf.a
 
-CFLAGS	=	-Wall -Wextra -Werror
+CC		= cc
+CFLAGS	= -Wall -Wextra -Werror -pedantic
+INC		= libft/
 
-SRC		=	ft_printf.c
+SRC		= ft_printf.c
+HEADER	= ft_printf.h
 
-HEADER	=	ft_printf.h
+OBJ		= $(SRC:.c=.o)
 
-OBJ		=	$(SRC:.c=.o)
-
-all: $(NAME)
-
-$(NAME): $(OBJ)
-	make -C libft
-	ar -rcs --thin $(NAME) $(OBJ) libft/libft.a
-
-.c.o: $(HEADER)
-	cc $(CFLAGS) -c $< -o $@
+all:
+	$(CC) $(CFLAGS) -c $(SRC)
+	ar -rcs $(NAME) $(OBJ)
 
 clean:
-	make fclean -C libft
+	# make fclean -C libft
 	rm	-f $(OBJ)
 
 fclean: clean
