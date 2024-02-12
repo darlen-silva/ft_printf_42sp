@@ -2,24 +2,27 @@ NAME	= libftprintf.a
 
 CC		= cc
 CFLAGS	= -Wall -Wextra -Werror -pedantic
-INC		= libft/
 
-SRC		= ft_printf.c
+SRC		= ft_printf.c ft_printf_utils.c
 HEADER	= ft_printf.h
 
 OBJ		= $(SRC:.c=.o)
 
-all:
+all: $(NAME) $(OBJ)
+
+$(NAME): $(SRC) $(HEADER)
 	$(CC) $(CFLAGS) -c $(SRC)
 	ar -rcs $(NAME) $(OBJ)
 
+test: $(NAME)
+	@$(CC) -g main.c -L. -lftprintf
+	@./a.out | cat -e
+
 clean:
-	# make fclean -C libft
-	rm	-f $(OBJ)
+	@rm -f $(OBJ)
 
 fclean: clean
-	make fclean -C libft
-	rm -rf $(NAME)
+	@rm -f $(NAME)
 
 re: fclean all
 
