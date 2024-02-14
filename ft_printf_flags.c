@@ -6,7 +6,7 @@
 /*   By: dardo-na <dardo-na@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/13 14:15:09 by dardo-na          #+#    #+#             */
-/*   Updated: 2024/02/13 21:22:15 by dardo-na         ###   ########.fr       */
+/*   Updated: 2024/02/13 22:50:55 by dardo-na         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ int	set_fmt(const char *s, t_fmt *fmt)
 		fmt->left_pad = 1;
 	else
 		fmt->right_pad = 1;
-	// printf("(%d)\n", num_len(0, 10));
+	// printf("(%d)\n", fmt->right_pad);
 	// printf("\n\nflag: %c\nspec: %c\nwidth: %d\nrpad: %d\nlpad: %d\nw: %d\n\n", fmt->flag, fmt->spec, fmt->width, fmt->right_pad, fmt->left_pad, w);
 	return (w);
 }
@@ -64,6 +64,10 @@ int	unsigneds(t_fmt *fmt, unsigned int num, int c)
 		return (pad(0, fmt->width - 1, c));
 	if (fmt->spec == 'u')
 		return (pad(num_len(num, BASE10), fmt->width, c));
+	if (fmt->flag == '#' && fmt->spec == 'x' )
+		return (write(1, "0x", 2));
+	else if (fmt->flag == '#' && fmt->spec == 'X')
+		return (write(1, "0X", 2));
 	return (pad(num_len(num, BASE16), fmt->width, c));
 }
 
@@ -72,22 +76,28 @@ int	handle_right_pad(t_fmt *fmt, va_list arg)
 	int		size;
 	int		num;
 	int		c;
+	int		d;
 
-	c = ' ';
 	size = 0;
-	if (fmt->flag == '0')
-		c = '0';
+	c = '0';
+	d = 0;
 	if (fmt->spec == 'd' || fmt->spec == 'i')
 	{
 		num = va_arg(arg, int);
+		if (fmt->flag == '+' && num >= 0)
+			return (write(1, "+", 1));
+		if (fmt->flag == ' ' && num >= 0)
+			return (write(1, " ", 1));
 		if (fmt->spec == 'c' || num == 0)
 			return (pad(size, fmt->width - 1, c));
+		if (fmt->flag == '.' && num < 0)
+			d = 1;
 		if (num < 0 && (fmt->spec == 'd' || fmt->spec == 'i'))
 		{
 			size += write(1, "-", 1);
 			num = -num;
 		}
-		size += pad(num_len(num, BASE10) + size, fmt->width, c);
+		size += pad(num_len(num, BASE10) + size - d, fmt->width, c);
 	}
 	if (fmt->spec == 'u' || fmt->spec == 'x' || fmt->spec == 'X')
 	{

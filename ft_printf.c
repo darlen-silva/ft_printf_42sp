@@ -6,11 +6,12 @@
 /*   By: dardo-na <dardo-na@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 09:25:08 by dardo-na          #+#    #+#             */
-/*   Updated: 2024/02/13 19:33:12 by dardo-na         ###   ########.fr       */
+/*   Updated: 2024/02/13 21:50:00 by dardo-na         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
+#include <stdio.h>
 
 static int	format_str(const char *s, va_list arg, int *i);
 
@@ -58,6 +59,12 @@ static int	handle_str(t_fmt *fmt, const char *s)
 		return (write(1, "(null)", 6));
 	while (s[i])
 		i++;
+	if (fmt->flag == '.')
+	{
+		if (fmt->width < i)
+			return (write(1, s, fmt->width));
+		return (write(1, s, i));
+	}
 	if (fmt->right_pad)
 		size += pad(i, fmt->width, ' ');
 	size += write(1, s, i);
