@@ -3,7 +3,7 @@ NAME	= libftprintf.a
 CC		= cc
 CFLAGS	= -Wall -Wextra -Werror -pedantic
 
-SRC		= ft_printf.c ft_printf_utils.c
+SRC		= ft_printf.c ft_printf_utils.c ft_printf_flags.c
 HEADER	= ft_printf.h
 
 OBJ		= $(SRC:.c=.o)
@@ -14,9 +14,11 @@ $(NAME): $(SRC) $(HEADER)
 	$(CC) $(CFLAGS) -c $(SRC)
 	ar -rcs $(NAME) $(OBJ)
 
-test: $(NAME)
-	@$(CC) -g main.c -L. -lftprintf
-	@./a.out | cat -e
+bonus: $(NAME)
+
+test:
+	@$(CC) $(SRC) -g main.c
+	@./a.out
 
 clean:
 	@rm -f $(OBJ)

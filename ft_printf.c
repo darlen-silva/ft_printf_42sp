@@ -6,13 +6,13 @@
 /*   By: dardo-na <dardo-na@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 09:25:08 by dardo-na          #+#    #+#             */
-/*   Updated: 2024/02/12 10:03:15 by dardo-na         ###   ########.fr       */
+/*   Updated: 2024/02/13 19:33:12 by dardo-na         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
-static int	format_str(const char *s, va_list arg);
+static int	format_str(const char *s, va_list arg, int *i);
 
 int	ft_printf(const char *s, ...)
 {
@@ -28,7 +28,7 @@ int	ft_printf(const char *s, ...)
 	while (s[i])
 	{
 		if (s[i] == '%')
-			size += format_str(&s[++i], args);
+			size += format_str(&s[++i], args, &i);
 		else
 			size += write(1, &s[i], 1);
 		i++;
@@ -47,36 +47,52 @@ static int	handle_pointer(void *addr)
 	return (write(1, "0x", 2) + print_num(cast, BASE16, NUMS_LOWERCASE));
 }
 
-static int	handle_str(const char *s)
+static int	handle_str(t_fmt *fmt, const char *s)
 {
 	int	i;
+	int	size;
 
 	i = 0;
+	size = 0;
 	if (NULL == s)
 		return (write(1, "(null)", 6));
 	while (s[i])
-		write(1, &s[i++], 1);
-	return (i);
+		i++;
+	if (fmt->right_pad)
+		size += pad(i, fmt->width, ' ');
+	size += write(1, s, i);
+	return (size);
 }
 
-static int	format_str(const char *s, va_list arg)
+static int	handle_char(int c)
 {
-	int	c;
+	return (write(1, &c, 1));
+}
 
-	if (*s == '%')
-		return (write(1, "%", 1));
-	if (*s == 'c')
-	{
-		c = va_arg(arg, int);
-		return (write(1, &c, 1));
-	}
-	else if (*s == 's')
-		return (handle_str(va_arg(arg, char *)));
-	else if (*s == 'd' || *s == 'i' )
-		return (handle_signed(va_arg(arg, int)));
-	else if (*s == 'u' || *s == 'x' || *s == 'X')
-		return (handle_unsigned(va_arg(arg, unsigned long), *s));
-	else if (*s == 'p')
-		return (handle_pointer(va_arg(arg, void *)));
-	return (0);
+static int	format_str(const char *s, va_list arg, int *i)
+{
+	int		size;
+	t_fmt	fmt;
+	va_list	copy;
+
+	*i += set_fmt(s, &fmt);
+	size = 0;
+	va_copy(copy, arg);
+	if (fmt.spec == '%')
+		size += (write(1, "%", 1));
+	if (fmt.right_pad)
+		size += handle_right_pad(&fmt, copy);
+	if (fmt.spec == 'c')
+		size += handle_char(va_arg(arg, int));
+	if (fmt.spec == 's')
+		size += (handle_str(&fmt, va_arg(arg, char *)));
+	if (fmt.spec == 'd' || fmt.spec == 'i' )
+		size += (handle_signed(&fmt, va_arg(arg, int)));
+	if (fmt.spec == 'u' || fmt.spec == 'x' || fmt.spec == 'X')
+		size += (handle_unsigned(va_arg(arg, unsigned long), fmt.spec));
+	if (fmt.spec == 'p')
+		size += (handle_pointer(va_arg(arg, void *)));
+	if (fmt.left_pad)
+		size += pad(size, fmt.width, ' ');
+	return (size);
 }

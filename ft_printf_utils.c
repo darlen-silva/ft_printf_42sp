@@ -6,11 +6,12 @@
 /*   By: dardo-na <dardo-na@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 08:32:59 by dardo-na          #+#    #+#             */
-/*   Updated: 2024/02/12 08:58:29 by dardo-na         ###   ########.fr       */
+/*   Updated: 2024/02/13 19:37:01 by dardo-na         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
+#include <stdio.h>
 
 int	print_num(unsigned long num, int base, const char *nums)
 {
@@ -36,11 +37,13 @@ int	handle_unsigned(unsigned long num, int c)
 	return (print_num(cast, BASE16, NUMS_LOWERCASE));
 }
 
-int	handle_signed(long num)
+int	handle_signed(t_fmt *fmt, long num)
 {
 	if (num == 0)
-		return (write(1, "0", 1));
+		return write(1, "0", 1);
+	if (fmt->right_pad && num < 0)
+		return (print_num(-num, BASE10, NUMS_LOWERCASE));
 	if (num < 0)
 		return (write(1, "-", 1) + print_num(-num, BASE10, NUMS_LOWERCASE));
-	return (print_num(num, BASE10, NUMS_LOWERCASE));
+	return print_num(num, BASE10, NUMS_LOWERCASE);
 }
