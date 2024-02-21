@@ -6,14 +6,16 @@
 /*   By: dardo-na <dardo-na@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/13 14:15:09 by dardo-na          #+#    #+#             */
-/*   Updated: 2024/02/13 22:50:55 by dardo-na         ###   ########.fr       */
+/*   Updated: 2024/02/21 18:08:22 by dardo-na         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
+#include <string.h>
 #include <stdio.h>
 
 #define FLAGS "-0. #+"
+#define SPECS "csdiuxXp%"
 
 int	num_len(unsigned long num, int base)
 {
@@ -29,31 +31,47 @@ int	pad(int s, int e, int c)
 	return (write(1, &c, 1) + pad(s + 1, e, c));
 }
 
+bool	has_char(const char *s, int c)
+{
+	if (s == NULL || *s == 0)
+		return (false);
+	return (*s == c || has_char(s + 1, c));
+}
+
+int	get_num(const char *s, int *n)
+{
+	int	i;
+
+	i = 0;
+	while (s[i] && (s[i] >= '0' && s[i] <= '9'))
+		*n = (*n * 10) + (s[i++] - '0');
+	return (i - 1);
+}
+
 int	set_fmt(const char *s, t_fmt *fmt)
 {
-	int		w;
-	char	*f;
+	int	w;
 
-	f = FLAGS;
-	fmt->width = 0;
-	fmt->left_pad = 0;
-	fmt->right_pad = 0;
-	fmt->flag = 0;
-	w = 0;
-	while (*f)
+	w = -1;
+	memset(fmt, 0, sizeof(t_fmt));
+	while (s[++w] && !has_char(SPECS, s[w]))
 	{
-		if (*f == s[w])
-			fmt->flag = s[w++];
-		f++;
+		if (s[w] == '-')
+			fmt->left_pad = true;
+		if (s[w] == '0' || s[w] == '.')
+		{
+			w += get_num(&s[w+1], &fmt->prec_width);
+			continue ;
+		}
+		if (s[w] >= '1' && s[w] <= '9')
+			w += get_num(&s[w], &fmt->width);
 	}
-	while (s[w] >= '0' && s[w] <= '9')
-		fmt->width = (fmt->width * 10) + (s[w++] - '0');
+	// printf("\n");
 	fmt->spec = s[w];
-	if (fmt->flag == '-')
-		fmt->left_pad = 1;
-	else
-		fmt->right_pad = 1;
-	// printf("(%d)\n", fmt->right_pad);
+	if (fmt->width > 0)
+		fmt->right_pad = true;
+	// printf("(%d)\n", fmt->width);
+	// printf("(%c)\n", fmt->spec);
 	// printf("\n\nflag: %c\nspec: %c\nwidth: %d\nrpad: %d\nlpad: %d\nw: %d\n\n", fmt->flag, fmt->spec, fmt->width, fmt->right_pad, fmt->left_pad, w);
 	return (w);
 }
@@ -74,38 +92,15 @@ int	unsigneds(t_fmt *fmt, unsigned int num, int c)
 int	handle_right_pad(t_fmt *fmt, va_list arg)
 {
 	int		size;
-	int		num;
-	int		c;
-	int		d;
 
 	size = 0;
-	c = '0';
-	d = 0;
+	// printf("%d", fmt->width);
+	if (fmt->spec == 'c' && fmt->width > 0 && !fmt->left_pad)
+		return (pad(0, fmt->width-1, ' '));
 	if (fmt->spec == 'd' || fmt->spec == 'i')
-	{
-		num = va_arg(arg, int);
-		if (fmt->flag == '+' && num >= 0)
-			return (write(1, "+", 1));
-		if (fmt->flag == ' ' && num >= 0)
-			return (write(1, " ", 1));
-		if (fmt->spec == 'c' || num == 0)
-			return (pad(size, fmt->width - 1, c));
-		if (fmt->flag == '.' && num < 0)
-			d = 1;
-		if (num < 0 && (fmt->spec == 'd' || fmt->spec == 'i'))
-		{
-			size += write(1, "-", 1);
-			num = -num;
-		}
-		size += pad(num_len(num, BASE10) + size - d, fmt->width, c);
-	}
+		return (0);
 	if (fmt->spec == 'u' || fmt->spec == 'x' || fmt->spec == 'X')
-	{
-		unsigned int cast = va_arg(arg, unsigned long);
-		if (fmt->spec == 'p')
-			size += pad(num_len(cast, BASE16), fmt->width, c);
-		size += (unsigneds(fmt, cast, c));
-	}
+		size += (unsigneds(fmt, va_arg(arg, unsigned long), '0'));
 	return (size);
 }
 
