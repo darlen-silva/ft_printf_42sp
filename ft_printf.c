@@ -6,7 +6,7 @@
 /*   By: dardo-na <dardo-na@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 09:25:08 by dardo-na          #+#    #+#             */
-/*   Updated: 2024/02/13 21:50:00 by dardo-na         ###   ########.fr       */
+/*   Updated: 2024/02/21 21:45:54 by dardo-na         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,18 +55,23 @@ static int	handle_str(t_fmt *fmt, const char *s)
 
 	i = 0;
 	size = 0;
-	if (NULL == s)
-		return (write(1, "(null)", 6));
-	while (s[i])
+	if (NULL == s && !(fmt->prec == '.'))
+		return (pad(0, fmt->width - 6, ' ') + write(1, "(null)", 6));
+	while (s && s[i])
 		i++;
-	if (fmt->flag == '.')
-	{
-		if (fmt->width < i)
-			return (write(1, s, fmt->width));
-		return (write(1, s, i));
-	}
-	if (fmt->right_pad)
+	if (fmt->right_pad && fmt->width > 0)
 		size += pad(i, fmt->width, ' ');
+	if (fmt->prec == '.')
+	{
+		if (s == NULL && fmt->prec_width >= 6)
+			return (size + write(1, "(null)", 6));
+		if (fmt->prec_width < i)
+		{
+			size += pad(fmt->prec_width, fmt->width, ' ');
+			return (size + write(1, s, fmt->prec_width));
+		}
+		return (size + write(1, s, i));
+	}
 	size += write(1, s, i);
 	return (size);
 }
@@ -82,8 +87,8 @@ static int	format_str(const char *s, va_list arg, int *i)
 	t_fmt	fmt;
 	va_list	copy;
 
-	*i += set_fmt(s, &fmt);
 	size = 0;
+	*i += set_fmt(s, &fmt);
 	va_copy(copy, arg);
 	if (fmt.spec == '%')
 		size += (write(1, "%", 1));
@@ -100,6 +105,6 @@ static int	format_str(const char *s, va_list arg, int *i)
 	if (fmt.spec == 'p')
 		size += (handle_pointer(va_arg(arg, void *)));
 	if (fmt.left_pad)
-		size += pad(size, fmt.width, ' ');
+		size += pad(size, fmt.left_width, ' ');
 	return (size);
 }

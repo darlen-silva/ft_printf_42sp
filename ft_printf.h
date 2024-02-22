@@ -6,7 +6,7 @@
 /*   By: dardo-na <dardo-na@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/09 07:44:07 by dardo-na          #+#    #+#             */
-/*   Updated: 2024/02/21 17:45:30 by dardo-na         ###   ########.fr       */
+/*   Updated: 2024/02/21 20:45:07 by dardo-na         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,10 +25,12 @@ typedef struct s_fmt
 {
 	int		width;
 	int		prec_width;
+	int		left_width;
 	bool	right_pad;
 	bool	left_pad;
 	char	flag;
 	char	spec;
+	char	prec;
 }	t_fmt;
 
 int		ft_printf(const char *s, ...);

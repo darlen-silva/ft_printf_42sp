@@ -6,7 +6,7 @@
 /*   By: dardo-na <dardo-na@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/13 14:15:09 by dardo-na          #+#    #+#             */
-/*   Updated: 2024/02/21 18:08:22 by dardo-na         ###   ########.fr       */
+/*   Updated: 2024/02/21 21:47:15 by dardo-na         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,10 @@ int	get_num(const char *s, int *n)
 	int	i;
 
 	i = 0;
+	if (*n > 0)
+		return (0);
+	while (s[0] == s[i] && !(s[i] >= '0' && s[i] <= '9'))
+		i++;
 	while (s[i] && (s[i] >= '0' && s[i] <= '9'))
 		*n = (*n * 10) + (s[i++] - '0');
 	return (i - 1);
@@ -57,16 +61,20 @@ int	set_fmt(const char *s, t_fmt *fmt)
 	while (s[++w] && !has_char(SPECS, s[w]))
 	{
 		if (s[w] == '-')
+		{
 			fmt->left_pad = true;
+			w += get_num(&s[w], &fmt->left_width);
+			continue ;
+		}
 		if (s[w] == '0' || s[w] == '.')
 		{
-			w += get_num(&s[w+1], &fmt->prec_width);
+			fmt->prec = s[w];
+			w += get_num(&s[w], &fmt->prec_width);
 			continue ;
 		}
 		if (s[w] >= '1' && s[w] <= '9')
 			w += get_num(&s[w], &fmt->width);
 	}
-	// printf("\n");
 	fmt->spec = s[w];
 	if (fmt->width > 0)
 		fmt->right_pad = true;
