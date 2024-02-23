@@ -6,7 +6,7 @@
 /*   By: dardo-na <dardo-na@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/09 07:44:07 by dardo-na          #+#    #+#             */
-/*   Updated: 2024/02/22 23:14:18 by dardo-na         ###   ########.fr       */
+/*   Updated: 2024/02/23 00:12:26 by dardo-na         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,9 @@ typedef struct s_fmt
 	int		left_width;
 	bool	right_pad;
 	bool	left_pad;
+	bool	hash;
+	bool	plus;
+	bool	space;
 	char	flag;
 	char	spec;
 	char	prec;

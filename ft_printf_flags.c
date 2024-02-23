@@ -6,7 +6,7 @@
 /*   By: dardo-na <dardo-na@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/13 14:15:09 by dardo-na          #+#    #+#             */
-/*   Updated: 2024/02/22 23:37:50 by dardo-na         ###   ########.fr       */
+/*   Updated: 2024/02/23 01:22:14 by dardo-na         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ bool	has_char(const char *s, int c)
 	return (*s == c || has_char(s + 1, c));
 }
 
-int	get_num(const char *s, int *n)
+int	get_num(const char *s, int *n, t_fmt *fmt)
 {
 	int	i;
 
@@ -47,7 +47,13 @@ int	get_num(const char *s, int *n)
 		return (0);
 	if (*n > 0)
 		*n = 0;
-	while (s[0] == s[i] && !(s[i] >= '0' && s[i] <= '9'))
+	while (s[0] == s[i] && !(s[i] >= '1' && s[i] <= '9'))
+		i++;
+	if (s[i] == ' ')
+		fmt->space = true;
+	if (s[i] == '+')
+		fmt->plus = true;
+	while (s[i] == ' ' || s[i] == '+')
 		i++;
 	while (s[i] && (s[i] >= '0' && s[i] <= '9'))
 		*n = (*n * 10) + (s[i++] - '0');
@@ -65,15 +71,15 @@ int	set_fmt(const char *s, t_fmt *fmt)
 	while (s[++w] && !has_char(SPECS, s[w]))
 	{
 		if (s[w] == '#')
-			fmt->flag = '#';
+			fmt->hash = true;
 		if (s[w] == '+')
-			fmt->flag = '+';
+			fmt->plus = true;
 		if (s[w] == ' ')
-			fmt->flag = ' ';
+			fmt->space = true;
 		if (s[w] == '-')
 		{
 			fmt->left_pad = true;
-			w += get_num(&s[w], &fmt->left_width);
+			w += get_num(&s[w], &fmt->left_width, fmt);
 			continue ;
 		}
 		if (s[w] == '0' || s[w] == '.')
@@ -83,18 +89,15 @@ int	set_fmt(const char *s, t_fmt *fmt)
 			if (fmt->prec == '.' && s[w] == '0')
 				continue ;
 			fmt->prec = s[w];
-			w += get_num(&s[w], &fmt->prec_width);
+			w += get_num(&s[w], &fmt->prec_width, fmt);
 			continue ;
 		}
 		if (s[w] >= '1' && s[w] <= '9')
-			w += get_num(&s[w], &fmt->width);
+			w += get_num(&s[w], &fmt->width, fmt);
 	}
 	fmt->spec = s[w];
-	if (fmt->width > 0 || fmt->prec)
+	if (fmt->width > 0 || fmt->prec || fmt->space || fmt->hash || fmt->plus)
 		fmt->right_pad = true;
-	// printf("(%d)\n", fmt->width);
-	// printf("(%c)\n", fmt->spec);
-	// printf("\n\nflag: %c\nspec: %c\nwidth: %d\nrpad: %d\nlpad: %d\nw: %d\n\n", fmt->flag, fmt->spec, fmt->width, fmt->right_pad, fmt->left_pad, w);
 	return (w);
 }
 
@@ -129,6 +132,10 @@ int	unsigneds(t_fmt *fmt, unsigned int num)
 		return (pad(0, fmt->width - 1, ' ') + write(1, "0", 1));
 	if (fmt->spec == 'u' && fmt->prec)
 		return (size + unsigned_right_pad_aux(fmt, num, len));
+	if (fmt->hash && fmt->spec == 'x')
+		size += write(1, "0x", 2);
+	if (fmt->hash && fmt->spec == 'X')
+		size += write(1, "0X", 2);
 	if (fmt->spec == 'x' && fmt->prec)
 		return (size + unsigned_right_pad_aux(fmt, num, len));
 	if (fmt->spec == 'X' && fmt->prec)
@@ -149,12 +156,14 @@ int	signed_right_pad_aux(t_fmt *fmt, int num, int len, int sign)
 		else if (fmt->width > 0 && fmt->prec_width > len)
 			size += pad(fmt->prec_width, fmt->width - sign, ' ');
 	}
+	width = fmt->space + fmt->plus;
 	if (num == 0)
-		return (size + pad(0, fmt->prec_width, '0'));
+		return (size + pad(width, fmt->prec_width + width, '0'));
 	width = fmt->prec_width + (fmt->prec == '.') - sign;
 	if (sign)
 		return (size + write(1, "-", 1) + pad(len, width, '0'));
-	return (size + pad(len, fmt->prec_width - !num, '0'));
+	width = fmt->prec_width - (fmt->space + fmt->plus);
+	return (size + pad(len, width, '0'));
 }
 
 int	handle_right_signed_pad(t_fmt *fmt, long num)
@@ -168,10 +177,14 @@ int	handle_right_signed_pad(t_fmt *fmt, long num)
 	if (sign)
 		num = -num;
 	len = num_len(num, BASE10);
+	if (fmt->plus && !sign)
+		size += write(1, "+", 1);
+	if (fmt->space && !sign)
+		size += write(1, " ", 1);
 	if (num == 0 && !fmt->prec)
-		return (pad(0, fmt->width - 1, ' ') + write(1, "0", 1));
+		return (size + pad(0, fmt->width - 1, ' ') + write(1, "0", 1));
 	if (fmt->prec == '.' || fmt->prec == '0')
-		return (signed_right_pad_aux(fmt, num, len, sign));
+		return (size + signed_right_pad_aux(fmt, num, len, sign));
 	if (sign)
 		return (size + pad(len, fmt->width - 1, ' ') + write(1, "-", 1));
 	return (size + pad(len, fmt->width - !num, ' '));
@@ -196,6 +209,7 @@ int	handle_right_pad(t_fmt *fmt, va_list arg)
 		len = num_len((unsigned long)p, BASE16);
 		return (pad(len, fmt->width - 2, ' '));
 	}
-	return (0);
+	else
+		return (0);
 }
 
