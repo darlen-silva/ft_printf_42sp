@@ -6,7 +6,7 @@
 /*   By: dardo-na <dardo-na@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 08:32:59 by dardo-na          #+#    #+#             */
-/*   Updated: 2024/02/13 21:55:19 by dardo-na         ###   ########.fr       */
+/*   Updated: 2024/02/22 18:37:35 by dardo-na         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,10 +39,10 @@ int	handle_unsigned(unsigned long num, int c)
 
 int	handle_signed(t_fmt *fmt, long num)
 {
-	if (num == 0)
-		return write(1, "0", 1);
-	if (fmt->right_pad && num < 0)
+	if (fmt->right_pad && num <= 0)
 		return (print_num(-num, BASE10, NUMS_LOWERCASE));
+	if (num == 0)
+		return (write(1, "0", 1));
 	if (num < 0)
 		return (write(1, "-", 1) + print_num(-num, BASE10, NUMS_LOWERCASE));
 	return print_num(num, BASE10, NUMS_LOWERCASE);

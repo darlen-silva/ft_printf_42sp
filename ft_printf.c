@@ -6,7 +6,7 @@
 /*   By: dardo-na <dardo-na@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 09:25:08 by dardo-na          #+#    #+#             */
-/*   Updated: 2024/02/21 21:45:54 by dardo-na         ###   ########.fr       */
+/*   Updated: 2024/02/21 22:03:00 by dardo-na         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ static int	handle_str(t_fmt *fmt, const char *s)
 		return (pad(0, fmt->width - 6, ' ') + write(1, "(null)", 6));
 	while (s && s[i])
 		i++;
-	if (fmt->right_pad && fmt->width > 0)
+	if (fmt->right_pad && fmt->width > 0 && fmt->prec == 0)
 		size += pad(i, fmt->width, ' ');
 	if (fmt->prec == '.')
 	{
@@ -72,8 +72,7 @@ static int	handle_str(t_fmt *fmt, const char *s)
 		}
 		return (size + write(1, s, i));
 	}
-	size += write(1, s, i);
-	return (size);
+	return (size + write(1, s, i));
 }
 
 static int	handle_char(int c)
