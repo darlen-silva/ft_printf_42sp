@@ -6,7 +6,7 @@
 /*   By: dardo-na <dardo-na@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 08:32:59 by dardo-na          #+#    #+#             */
-/*   Updated: 2024/02/22 18:37:35 by dardo-na         ###   ########.fr       */
+/*   Updated: 2024/02/22 23:13:56 by dardo-na         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,12 +23,12 @@ int	print_num(unsigned long num, int base, const char *nums)
 	return (count + write(1, &nums[num % base], 1));
 }
 
-int	handle_unsigned(unsigned long num, int c)
+int	handle_unsigned(t_fmt *fmt, unsigned long num, int c)
 {
 	unsigned int	cast;
 
 	cast = (unsigned int)num;
-	if (cast == 0)
+	if (cast == 0 && !fmt->right_pad)
 		return (write(1, "0", 1));
 	else if (c == 'u')
 		return (print_num(cast, BASE10, NUMS_LOWERCASE));

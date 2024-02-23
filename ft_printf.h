@@ -6,7 +6,7 @@
 /*   By: dardo-na <dardo-na@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/09 07:44:07 by dardo-na          #+#    #+#             */
-/*   Updated: 2024/02/21 20:45:07 by dardo-na         ###   ########.fr       */
+/*   Updated: 2024/02/22 23:14:18 by dardo-na         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ typedef struct s_fmt
 
 int		ft_printf(const char *s, ...);
 int		print_num(unsigned long num, int base, const char *nums);
-int		handle_unsigned(unsigned long num, int c);
+int		handle_unsigned(t_fmt *fmt, unsigned long num, int c);
 int		handle_signed(t_fmt *fmt, long num);
 int		set_fmt(const char *s, t_fmt *fmt);
 int		handle_right_pad(t_fmt *fmt, va_list arg);

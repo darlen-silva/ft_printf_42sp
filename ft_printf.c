@@ -6,7 +6,7 @@
 /*   By: dardo-na <dardo-na@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 09:25:08 by dardo-na          #+#    #+#             */
-/*   Updated: 2024/02/21 22:03:00 by dardo-na         ###   ########.fr       */
+/*   Updated: 2024/02/22 23:14:39 by dardo-na         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,7 @@ static int	format_str(const char *s, va_list arg, int *i)
 	if (fmt.spec == 'd' || fmt.spec == 'i' )
 		size += (handle_signed(&fmt, va_arg(arg, int)));
 	if (fmt.spec == 'u' || fmt.spec == 'x' || fmt.spec == 'X')
-		size += (handle_unsigned(va_arg(arg, unsigned long), fmt.spec));
+		size += (handle_unsigned(&fmt, va_arg(arg, unsigned long), fmt.spec));
 	if (fmt.spec == 'p')
 		size += (handle_pointer(va_arg(arg, void *)));
 	if (fmt.left_pad)
