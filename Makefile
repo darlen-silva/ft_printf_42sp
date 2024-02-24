@@ -1,17 +1,18 @@
 NAME	= libftprintf.a
 
 CC		= cc
-CFLAGS	= -Wall -Wextra -Werror -pedantic
+CFLAGS	= -Wall -Wextra -Werror -pedantic -mshstk
 
-SRC		= ft_printf.c ft_printf_utils.c ft_printf_flags.c
+SRC		= ft_printf.c ft_printf_utils.c \
+		  ft_printf_flags.c ft_printf_fmt.c
+
 HEADER	= ft_printf.h
 
 OBJ		= $(SRC:.c=.o)
 
-all: $(NAME) $(OBJ)
+all: $(NAME)
 
-$(NAME): $(SRC) $(HEADER)
-	$(CC) $(CFLAGS) -c $(SRC)
+$(NAME): $(OBJ) $(HEADER)
 	ar -rcs $(NAME) $(OBJ)
 
 bonus: $(NAME)
@@ -21,10 +22,10 @@ test:
 	@./a.out
 
 clean:
-	@rm -f $(OBJ)
+	rm -f $(OBJ)
 
 fclean: clean
-	@rm -f $(NAME)
+	rm -f $(NAME)
 
 re: fclean all
 
