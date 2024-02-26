@@ -6,7 +6,7 @@
 /*   By: dardo-na <dardo-na@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/09 07:44:07 by dardo-na          #+#    #+#             */
-/*   Updated: 2024/02/24 18:07:47 by dardo-na         ###   ########.fr       */
+/*   Updated: 2024/02/25 22:38:49 by dardo-na         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,4 +45,4 @@ int		set_fmt(const char *s, t_fmt *fmt);
 int		handle_right_pad(t_fmt *fmt, va_list arg);
 int		pad(int s, int e, int c);
 
-#endif
+#endif // FT_PRINTF_H

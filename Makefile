@@ -1,14 +1,17 @@
 NAME	= libftprintf.a
 
 CC		= cc
-CFLAGS	= -Wall -Wextra -Werror -pedantic -mshstk
+CFLAGS	= -Wall -Wextra -Werror -pedantic -mshstk -I.
 
-SRC		= ft_printf.c ft_printf_utils.c \
-		  ft_printf_flags.c ft_printf_fmt.c
+SRC_DIR	= ./src
+SRC		= ft_printf.c \
+		  ft_printf_utils.c \
+		  ft_printf_flags.c \
+		  ft_printf_fmt.c
 
+SRCS	= $(addprefix $(SRC_DIR)/, $(SRC))
 HEADER	= ft_printf.h
-
-OBJ		= $(SRC:.c=.o)
+OBJ		= $(SRCS:.c=.o)
 
 all: $(NAME)
 
